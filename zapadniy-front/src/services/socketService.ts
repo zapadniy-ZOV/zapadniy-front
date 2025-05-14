@@ -161,20 +161,6 @@ class SocketService {
       })
     });
   }
-
-  ratePerson(targetUserId: string, ratingChange: number): void {
-    if (!this.stompClient || !this.userId) return;
-    
-    this.stompClient.publish({
-      destination: '/app/rate-person',
-      body: JSON.stringify({
-        userId: this.userId,
-        targetUserId,
-        ratingChange
-      })
-    });
-  }
-
   isConnected(): boolean {
     return this.stompClient !== null && this.stompClient.connected;
   }

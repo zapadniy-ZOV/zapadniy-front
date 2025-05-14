@@ -48,20 +48,6 @@ export function useNearbyUsers(currentLocation: GeoLocation | null, currentUserI
     try {
       // Pass the current user ID as the rater
       await userService.updateSocialRating(userId, rating, currentUserId);
-      
-      // Update the local state for the target user
-      setNearbyUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userId 
-            ? { ...user, socialRating: user.socialRating + rating } 
-            : user
-        )
-      );
-
-      // Also update via socket for real-time
-      if (socketService.isConnected() && currentUserId) {
-        socketService.ratePerson(userId, rating);
-      }
     } catch (err) {
       setError('Failed to rate user');
     }

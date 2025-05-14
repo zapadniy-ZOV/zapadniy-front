@@ -11,9 +11,6 @@ export function useRegions(regionType: RegionType = RegionType.COUNTRY) {
   useEffect(() => {
     const fetchRegions = async () => {
       try {
-        // First update all region statistics to evaluate threat status
-        await regionService.updateAllRegionsStatistics();
-        
         // Then fetch the regions with updated data
         const fetchedRegions = await regionService.getRegionsByType(regionType);
         console.log('Fetched regions:', fetchedRegions);
