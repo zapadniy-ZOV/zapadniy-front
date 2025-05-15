@@ -24,6 +24,11 @@ export default defineConfig({
         target: 'http://127.0.0.1:21341',
         changeOrigin: true,
         ws: true,
+      },
+      '/user-activity-api': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/user-activity-api/, ''),
       }
     }
   }

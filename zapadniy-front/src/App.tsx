@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Layout, UserProfile, NearbyUsersList, RegionMap, RegionDetails, LoginForm } from './components';
 import { SupplyChainMap } from './components/map'; 
 import { useCurrentUser, useNearbyUsers, useRegions } from './hooks';
-import { Region, RegionType, SocialStatus, User, SupplyDepot } from './types';
+import { Region, RegionType, SocialStatus, User, SupplyDepot, GeoLocation } from './types';
 import { socketService } from './services';
 import { authService } from './services/authService';
 import { regionService } from './services/regionService';
@@ -13,6 +13,7 @@ function App() {
   const [selectedDepotId, setSelectedDepotId] = useState<string | undefined>(undefined);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+  const [userActivityPath, setUserActivityPath] = useState<GeoLocation[] | null>(null);
   
   const { 
     currentUser, 
@@ -242,6 +243,7 @@ function App() {
                 currentLocation={currentUser?.currentLocation}
                 targetRegionId={targetRegionId}
                 onSelectRegion={handleRegionSelect}
+                userActivityPath={userActivityPath}
               />
             </div>
             <div>
@@ -250,6 +252,7 @@ function App() {
                 isGovernmentUser={isGovernmentUser}
                 onLaunchMissile={launchMissile}
                 onNavigateToParent={handleNavigateToParent}
+                onActivityPathGenerated={setUserActivityPath}
               />
             </div>
           </div>

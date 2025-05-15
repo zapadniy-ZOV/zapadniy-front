@@ -1,5 +1,5 @@
 import api from './api';
-import { Region, RegionType, GeoLocation } from '../types';
+import { Region, RegionType, GeoLocation, User } from '../types';
 
 // Transform GeoJsonPolygon from backend to GeoLocation[] for frontend
 const transformRegionBoundaries = (region: any): Region => {
@@ -120,5 +120,10 @@ export const regionService = {
   getRegionsUnderThreat: async (type: RegionType): Promise<Region[]> => {
     const response = await api.get(`/regions/under-threat/${type}`);
     return response.data.map(transformRegionBoundaries);
+  },
+
+  getEliminatedUsers: async (regionId: string): Promise<User[]> => {
+    const response = await api.get(`/regions/${regionId}/eliminated-users`);
+    return response.data;
   }
 }; 

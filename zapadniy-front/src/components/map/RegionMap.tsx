@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polygon, useMap, Polyline } from 'react-leaflet';
 import { Region , GeoLocation } from '../../types';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import 'leaflet/dist/leaflet.css';
@@ -27,6 +27,7 @@ interface RegionMapProps {
   currentLocation?: GeoLocation;
   targetRegionId: string | null;
   onSelectRegion?: (region: Region) => void;
+  userActivityPath?: GeoLocation[] | null;
 }
 
 const MapCenter: React.FC<{ center: [number, number] }> = ({ center }) => {
@@ -41,10 +42,12 @@ const RegionMap: React.FC<RegionMapProps> = ({
   regions, 
   currentLocation, 
   targetRegionId,
-  onSelectRegion 
+  onSelectRegion, 
+  userActivityPath
 }) => {
   console.log('RegionMap received regions:', regions);
   console.log('Target region ID:', targetRegionId);
+  console.log('RegionMap userActivityPath prop:', userActivityPath);
   
   const defaultCenter: [number, number] = [55.7558, 37.6173]; // Moscow coordinates as default
   const [center, setCenter] = useState<[number, number]>(defaultCenter);
@@ -348,6 +351,16 @@ const RegionMap: React.FC<RegionMapProps> = ({
             </div>
           </Popup>
         </Marker>
+      )}
+
+      {/* Render User Activity Path */}
+      {userActivityPath && userActivityPath.length > 1 && (
+        <Polyline 
+          positions={userActivityPath.map(p => [p.latitude, p.longitude])}
+          color="blue"
+          weight={3}
+          opacity={0.7}
+        />
       )}
     </MapContainer>
   );
