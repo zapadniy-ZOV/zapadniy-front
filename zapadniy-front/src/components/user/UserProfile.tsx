@@ -1,6 +1,8 @@
 import React from 'react';
 import { User, SocialStatus } from '../../types';
-import { IdentificationIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { IdentificationIcon, MapPinIcon, ClockIcon, PaperAirplaneIcon, InboxArrowDownIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useUserInteractions, InteractionDirection } from '../../hooks/useUserInteractions';
+import { Interaction } from '../../services/interactionService';
 
 interface UserProfileProps {
   user: User | null;
@@ -23,6 +25,15 @@ const STATUS_COLORS = {
 };
 
 const UserProfile: React.FC<UserProfileProps> = ({ user, loading, error }) => {
+  const { 
+    interactions, 
+    loading: interactionsLoading, 
+    error: interactionsError, 
+    direction, 
+    setDirection,
+    refreshInteractions
+  } = useUserInteractions(user?.id);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -48,6 +59,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, loading, error }) => {
   }
 
   const lastUpdateTime = new Date(user.lastLocationUpdateTimestamp).toLocaleTimeString();
+
+  const formatInteractionTimestamp = (timestamp: number) => {
+    return new Date(timestamp / 1000000).toLocaleString();
+  };
 
   return (
     <div className="card p-6">
@@ -112,6 +127,80 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, loading, error }) => {
             <span className="text-sm text-gray-700">Last Updated: {lastUpdateTime}</span>
           </div>
         </div>
+      </div>
+
+      {/* User Interactions Section */}
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-gray-800">User Interactions</h3>
+          <button 
+            onClick={refreshInteractions} 
+            className="p-1 text-gray-500 hover:text-gray-700" 
+            title="Refresh Interactions"
+          >
+            <ArrowPathIcon className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="flex space-x-2 mb-4 border-b border-gray-200">
+          <button 
+            onClick={() => setDirection('received')} 
+            className={`py-2 px-4 font-medium text-sm rounded-t-md flex items-center gap-2 ${direction === 'received' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <InboxArrowDownIcon className="h-5 w-5" /> Received
+          </button>
+          <button 
+            onClick={() => setDirection('sent')} 
+            className={`py-2 px-4 font-medium text-sm rounded-t-md flex items-center gap-2 ${direction === 'sent' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <PaperAirplaneIcon className="h-5 w-5" /> Sent
+          </button>
+        </div>
+
+        {interactionsLoading && (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-500">Loading interactions...</p>
+          </div>
+        )}
+
+        {interactionsError && (
+          <div className="p-3 bg-red-50 text-red-600 rounded-md text-sm">
+            {interactionsError}
+          </div>
+        )}
+
+        {!interactionsLoading && !interactionsError && interactions.length === 0 && (
+          <div className="text-center py-6 bg-gray-50 rounded-md">
+            <p className="text-gray-500">No {direction} interactions found.</p>
+          </div>
+        )}
+
+        {!interactionsLoading && !interactionsError && interactions.length > 0 && (
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+            {interactions.map((interaction: Interaction, index: number) => (
+              <div key={index} className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className={`capitalize px-2 py-0.5 rounded-full text-xs font-semibold ${ 
+                      interaction.type === 'like' ? 'bg-green-100 text-green-700' : 
+                      interaction.type === 'dislike' ? 'bg-red-100 text-red-700' : 
+                      'bg-yellow-100 text-yellow-700' 
+                    }`}>
+                      {interaction.type}
+                    </span>
+                    {direction === 'received' && <p className="text-sm text-gray-700 mt-1">From: <span className="font-medium">User {interaction.userId}</span></p>}
+                    {direction === 'sent' && <p className="text-sm text-gray-700 mt-1">To: <span className="font-medium">User {interaction.reportedUserId}</span></p>}
+                  </div>
+                  <p className="text-xs text-gray-400">{formatInteractionTimestamp(interaction.timestamp)}</p>
+                </div>
+                {interaction.message && interaction.type === 'report' && (
+                  <p className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">Message: {interaction.message}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

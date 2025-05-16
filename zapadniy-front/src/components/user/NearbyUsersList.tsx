@@ -7,13 +7,15 @@ interface NearbyUsersListProps {
   loading: boolean;
   error: string | null;
   onRate: (userId: string, rating: number) => void;
+  onReport: (reportedUserId: string, message: string) => void;
 }
 
 const NearbyUsersList: React.FC<NearbyUsersListProps> = ({ 
   users, 
   loading,
   error,
-  onRate
+  onRate,
+  onReport
 }) => {
   if (loading) {
     return (
@@ -45,7 +47,7 @@ const NearbyUsersList: React.FC<NearbyUsersListProps> = ({
       <h2 className="text-xl font-bold text-gray-800">Citizens Nearby</h2>
       <div className="divide-y divide-gray-100">
         {users.map(user => (
-          <UserCard key={user.id} user={user} onRate={onRate} />
+          <UserCard key={user.id} user={user} onRate={onRate} onReport={onReport} />
         ))}
       </div>
     </div>

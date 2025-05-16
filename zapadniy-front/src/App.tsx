@@ -3,7 +3,7 @@ import { Layout, UserProfile, NearbyUsersList, RegionMap, RegionDetails, LoginFo
 import { SupplyChainMap } from './components/map'; 
 import { useCurrentUser, useNearbyUsers, useRegions } from './hooks';
 import { Region, RegionType, SocialStatus, User, SupplyDepot, GeoLocation } from './types';
-import { socketService } from './services';
+import { socketService, interactionService } from './services';
 import { authService } from './services/authService';
 import { regionService } from './services/regionService';
 
@@ -71,6 +71,23 @@ function App() {
         setTimeout(() => setNotification(null), 5000);
       }
     }, 1000);
+  };
+
+  // Add handler for reporting a user
+  const handleReportUser = async (reportedUserId: string, message: string) => {
+    if (!currentUser) {
+      setNotification({ message: 'You must be logged in to report users.', type: 'negative' });
+      setTimeout(() => setNotification(null), 5000);
+      return;
+    }
+    try {
+      await interactionService.recordReport(currentUser.id, reportedUserId, message);
+      setNotification({ message: `User reported successfully.`, type: 'positive' });
+    } catch (error) {
+      console.error("Failed to report user:", error);
+      setNotification({ message: 'Failed to submit report. Please try again.', type: 'negative' });
+    }
+    setTimeout(() => setNotification(null), 5000);
   };
 
   // Connect to socket when user is loaded
@@ -230,6 +247,7 @@ function App() {
             loading={nearbyLoading} 
             error={nearbyError} 
             onRate={handleRateUser} 
+            onReport={handleReportUser}
           />
         </div>
       )}

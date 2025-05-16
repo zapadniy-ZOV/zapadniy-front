@@ -1,10 +1,11 @@
 import React from 'react';
 import { User, SocialStatus } from '../../types';
-import { HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/outline';
+import { HandThumbUpIcon, HandThumbDownIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface UserCardProps {
   user: User;
   onRate: (userId: string, rating: number) => void;
+  onReport: (reportedUserId: string, message: string) => void;
 }
 
 const STATUS_COLORS = {
@@ -14,11 +15,18 @@ const STATUS_COLORS = {
   [SocialStatus.VIP]: 'bg-yellow-100 text-yellow-800',
 };
 
-const UserCard: React.FC<UserCardProps> = ({ user, onRate }) => {
+const UserCard: React.FC<UserCardProps> = ({ user, onRate, onReport }) => {
   const distanceAgo = Math.floor((Date.now() - user.lastLocationUpdateTimestamp) / 1000 / 60);
   const lastSeen = distanceAgo < 1 
     ? 'Just now' 
     : `${distanceAgo} ${distanceAgo === 1 ? 'minute' : 'minutes'} ago`;
+
+  const handleReport = () => {
+    const message = prompt(`Please enter your report message for ${user.fullName}:`);
+    if (message && user.id) {
+      onReport(user.id, message);
+    }
+  };
 
   return (
     <div className="card p-4 mb-4">
@@ -50,25 +58,37 @@ const UserCard: React.FC<UserCardProps> = ({ user, onRate }) => {
         </div>
       </div>
       
-      <div className="mt-4 flex justify-between">
+      <div className="mt-4 flex justify-between items-center">
+        <div className="flex space-x-2">
+          <button 
+            className="btn-secondary flex items-center gap-1 relative group"
+            onClick={() => onRate(user.id || '', -1)}
+          >
+            <HandThumbDownIcon className="h-5 w-5 text-red-500" />
+            <span>Dislike</span>
+            <span className="absolute -top-10 left-0 bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Affects your own rating negatively
+            </span>
+          </button>
+          <button 
+            className="btn-primary flex items-center gap-1 relative group"
+            onClick={() => onRate(user.id || '', 1)}
+          >
+            <HandThumbUpIcon className="h-5 w-5 text-white" />
+            <span>Like</span>
+            <span className="absolute -top-10 right-0 bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              Boosts your own rating too
+            </span>
+          </button>
+        </div>
         <button 
-          className="btn-secondary flex items-center gap-1 relative group"
-          onClick={() => onRate(user.id || '', -1)}
+          className="btn-danger flex items-center gap-1 relative group"
+          onClick={handleReport}
         >
-          <HandThumbDownIcon className="h-5 w-5 text-red-500" />
-          <span>Dislike</span>
-          <span className="absolute -top-10 left-0 bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Affects your own rating negatively
-          </span>
-        </button>
-        <button 
-          className="btn-primary flex items-center gap-1 relative group"
-          onClick={() => onRate(user.id || '', 1)}
-        >
-          <HandThumbUpIcon className="h-5 w-5 text-white" />
-          <span>Like</span>
+          <ExclamationTriangleIcon className="h-5 w-5 text-white" />
+          <span>Report</span>
           <span className="absolute -top-10 right-0 bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Boosts your own rating too
+            Report malicious activity
           </span>
         </button>
       </div>

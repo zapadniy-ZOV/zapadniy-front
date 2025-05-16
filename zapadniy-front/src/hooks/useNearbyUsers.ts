@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, GeoLocation } from '../types';
-import { userService, socketService } from '../services';
+import { userService, socketService, interactionService } from '../services';
 
 export function useNearbyUsers(currentLocation: GeoLocation | null, currentUserId: string | undefined, maxDistance: number = 5) {
   const [nearbyUsers, setNearbyUsers] = useState<User[]>([]);
@@ -48,8 +48,18 @@ export function useNearbyUsers(currentLocation: GeoLocation | null, currentUserI
     try {
       // Pass the current user ID as the rater
       await userService.updateSocialRating(userId, rating, currentUserId);
+      
+      // Also record the like/dislike interaction
+      if (currentUserId) {
+        if (rating > 0) {
+          await interactionService.recordLike(currentUserId, userId);
+        } else {
+          await interactionService.recordDislike(currentUserId, userId);
+        }
+      }
     } catch (err) {
-      setError('Failed to rate user');
+      console.error('Failed to rate user or record interaction:', err); // Log the error
+      setError('Failed to rate user or record interaction');
     }
   };
 
